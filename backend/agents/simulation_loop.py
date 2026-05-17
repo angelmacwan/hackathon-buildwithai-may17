@@ -36,12 +36,24 @@ def run_simulation(
     client = genai.Client(api_key=api_key)
     ms = match_state.model_dump()
 
+    batting_players = ms.get("batting_players") or []
+    bowling_players = ms.get("bowling_players") or []
+    striker         = ms.get("striker", "") or "unknown"
+    non_striker     = ms.get("non_striker", "") or "unknown"
+
+    player_context = ""
+    if batting_players:
+        player_context += f" Batting XI: {', '.join(batting_players)}."
+    if bowling_players:
+        player_context += f" Bowling XI: {', '.join(bowling_players)}."
+
     match_context = (
         f"Match situation: {ms['team_batting']} batting against {ms['team_bowling']}. "
         f"Score: {ms['current_score']}/{ms['wickets']} after {ms['over']}.{ms['ball']} overs. "
-        f"Striker: {ms['striker']}, Non-striker: {ms['non_striker']}. "
+        f"Striker: {striker}, Non-striker: {non_striker}. "
         f"Pitch: {ms['pitch_conditions']}, Dew: {ms['dew_factor']}/10, Venue: {ms.get('venue', 'IPL venue')}. "
         f"{'Chasing ' + str(ms['target']) + ' (RRR: ' + str(round(ms.get('required_run_rate') or 0, 2)) + ')' if ms.get('target') else '1st innings'}."
+        f"{player_context}"
     )
 
     debate_log: list[DebateTurn] = []
@@ -60,7 +72,7 @@ def run_simulation(
 
             try:
                 response = client.models.generate_content(
-                    model="gemini-1.5-flash",
+                    model="gemini-2.5-flash",
                     contents=user_message,
                     config=types.GenerateContentConfig(
                         system_instruction=system_prompt,

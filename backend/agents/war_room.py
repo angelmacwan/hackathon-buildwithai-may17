@@ -16,7 +16,7 @@ import operator
 from google import genai
 from google.genai import types
 
-from agents.tools import get_player_stats, get_bowler_stats, calculate_win_probability
+from agents.tools import calculate_win_probability
 from langgraph.graph import StateGraph, START, END
 
 
@@ -66,13 +66,14 @@ STATS_ANALYST_PROMPT = """You are the 'Stats Guru' for an IPL team. You deliver 
 
 Your job:
 - Analyse the batsmen currently at the crease and their match-ups against available bowlers.
-- Fetch player stats using the tools available to you.
+- Search for real player stats using Google Search.
 - Identify the most dangerous match-up the bowling team faces right now.
 - Highlight which bowling type the striker is most vulnerable against.
 
 Rules:
-- ALWAYS use the get_player_stats tool for the striker before making any recommendation.
-- ALWAYS use the calculate_win_probability tool to give current odds.
+- If the striker name is provided, ALWAYS search Google for their recent IPL stats and match-ups.
+- If the striker is unknown/empty, use the batting_players list to identify the likely current or upcoming batsmen and search for their stats.
+- Win probability is pre-calculated and provided in the prompt — reference it directly, do not recalculate.
 - Cite every number you use (e.g., "SR 145 vs leg-spin in last 5 seasons").
 - Remove emotion from the equation. Numbers only.
 - Keep your output to 3-4 crisp sentences.
@@ -177,30 +178,75 @@ def stats_analyst_node(state: WarRoomState) -> dict:
     ms = state["match_state"]
     client = get_client()
 
+    batting_players = ms.get("batting_players") or []
+    bowling_players = ms.get("bowling_players") or []
+    striker         = ms.get("striker", "")
+    non_striker     = ms.get("non_striker", "")
+
+    # Call win probability directly — can't mix google_search grounding with function tools
+    win_prob_result = calculate_win_probability(
+        innings=ms.get("innings", 1),
+        over=ms.get("over", 1),
+        current_score=ms.get("current_score", 0),
+        wickets=ms.get("wickets", 0),
+        target=ms.get("target") or 0,
+        required_run_rate=ms.get("required_run_rate") or 0.0,
+        dew_factor=ms.get("dew_factor", 3),
+        pitch_conditions=ms.get("pitch_conditions", "flat"),
+    )
+
+    player_context = ""
+    if batting_players:
+        player_context += f"\n- {ms['team_batting']} playing XI: {', '.join(batting_players)}"
+    if bowling_players:
+        player_context += f"\n- {ms['team_bowling']} playing XI: {', '.join(bowling_players)}"
+
+    striker_line = (
+        f"- Striker: {striker} | Non-striker: {non_striker}"
+        if striker
+        else "- Striker/Non-striker: not confirmed — use batting XI to identify who is likely at crease"
+    )
+
     prompt = (
         f"Match state:\n"
         f"- {ms['team_batting']} vs {ms['team_bowling']}\n"
         f"- Score: {ms['current_score']}/{ms['wickets']} after {ms['over']}.{ms['ball']} overs\n"
-        f"- Striker: {ms['striker']} | Non-striker: {ms['non_striker']}\n"
+        f"{striker_line}\n"
         f"- Venue: {ms.get('venue', 'Unknown')}\n"
         f"- Pitch: {ms['pitch_conditions']} | Dew: {ms['dew_factor']}/10\n"
-        f"- Context: {'2nd innings, target ' + str(ms.get('target')) if ms.get('target') else '1st innings'}\n"
-        f"\nAnalyse the current batting match-ups. Use get_player_stats for the striker. "
-        f"Also calculate win probability with calculate_win_probability."
+        f"- Context: {'2nd innings, target ' + str(ms.get('target')) if ms.get('target') else '1st innings'}"
+        f"{player_context}\n"
+        f"\nWin probability (pre-calculated): {win_prob_result}\n"
+        f"\nUse Google Search to find recent IPL stats and match-ups for the batsmen at the crease "
+        f"(or the likely current pair from the batting XI above). Cite specific numbers."
     )
 
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=STATS_ANALYST_PROMPT,
-            tools=[get_player_stats, get_bowler_stats, calculate_win_probability],
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=False),
-            temperature=0.4,
-        ),
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=STATS_ANALYST_PROMPT,
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.4,
+            ),
+        )
+        analysis = response.text or "Stats analysis unavailable."
+    except Exception as e:
+        # Fallback: no search grounding, just LLM reasoning with pre-calculated win prob
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=STATS_ANALYST_PROMPT,
+                    temperature=0.4,
+                ),
+            )
+            analysis = response.text or "Stats analysis unavailable."
+        except Exception:
+            analysis = f"Win probability: {win_prob_result}"
 
-    analysis = response.text or "Stats analysis unavailable."
     return {
         "stats_analysis": analysis,
         "debate_log": [{"agent": "Stats Guru", "message": analysis}],
@@ -222,7 +268,7 @@ def pitch_specialist_node(state: WarRoomState) -> dict:
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=PITCH_SPECIALIST_PROMPT,
@@ -233,7 +279,7 @@ def pitch_specialist_node(state: WarRoomState) -> dict:
     except Exception:
         # Fallback if grounding unavailable
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=PITCH_SPECIALIST_PROMPT,
@@ -252,19 +298,25 @@ def strategist_node(state: WarRoomState) -> dict:
     ms = state["match_state"]
     client = get_client()
 
+    bowling_players = ms.get("bowling_players") or []
+    bowlers_note    = (
+        f"Bowling squad: {', '.join(bowling_players)}." if bowling_players
+        else f"Available bowlers: {json.dumps(ms.get('bowlers_remaining', {}))}."
+    )
+
     prompt = (
         f"STATS GURU REPORT:\n{state['stats_analysis']}\n\n"
         f"PITCH SPECIALIST REPORT:\n{state['pitch_report']}\n\n"
         f"MATCH STATE:\n"
         f"{ms['team_bowling']} bowling to {ms['team_batting']}. "
         f"Over {ms['over']}.{ms['ball']}, score {ms['current_score']}/{ms['wickets']}. "
-        f"Striker: {ms['striker']}. Available bowlers: {json.dumps(ms.get('bowlers_remaining', {}))}. "
+        f"Striker: {ms.get('striker') or 'at crease'}. {bowlers_note} "
         f"Impact player available: {ms.get('impact_player_available', False)}.\n\n"
         f"Propose your tactical decision now."
     )
 
     response = client.models.generate_content(
-        model="gemini-1.5-pro",
+        model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=STRATEGIST_PROMPT,
@@ -292,7 +344,7 @@ def devils_advocate_node(state: WarRoomState) -> dict:
     )
 
     response = client.models.generate_content(
-        model="gemini-1.5-pro",
+        model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=DEVILS_ADVOCATE_PROMPT,
@@ -317,7 +369,7 @@ def strategist_refine_node(state: WarRoomState) -> dict:
     )
 
     response = client.models.generate_content(
-        model="gemini-1.5-pro",
+        model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=STRATEGIST_REFINE_PROMPT,
@@ -346,7 +398,7 @@ def commentator_node(state: WarRoomState) -> dict:
     )
 
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=COMMENTATOR_PROMPT,
@@ -376,7 +428,7 @@ def synthesizer_node(state: WarRoomState) -> dict:
     )
 
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYNTHESIZER_PROMPT,

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import MatchStateForm, { MatchStateFormValues } from "@/components/MatchStateForm";
+import LiveMatchPicker from "@/components/LiveMatchPicker";
 import OasisSimPanel from "@/components/OasisSimPanel";
-import { runOasis, OasisResult } from "@/lib/api";
+import { runOasis, OasisResult, MatchStateImport } from "@/lib/api";
+import { MatchStateFormValues } from "@/components/MatchStateForm";
 
 const PIPELINE_STEPS = [
   "① Ingest & Ontology",
@@ -16,6 +17,16 @@ export default function OasisPage() {
   const [result, setResult] = useState<OasisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [activeMatch, setActiveMatch] = useState<string | null>(null);
+
+  const handleImport = (data: MatchStateImport) => {
+    setShowPicker(false);
+    setActiveMatch(data.match_name);
+    if (data.state) {
+      handleSubmit(data.state as MatchStateFormValues);
+    }
+  };
 
   const handleSubmit = async (values: MatchStateFormValues) => {
     setIsLoading(true);
@@ -44,66 +55,90 @@ export default function OasisPage() {
             🌐 OASIS Simulation
           </h1>
           <p style={{ color: "rgba(255,255,255,0.72)", fontSize: "0.9rem", maxWidth: "54ch", lineHeight: 1.7, marginBottom: "1.5rem" }}>
-            Synthesises 3 distinct grounded coaching personas from match context,
+            Synthesises 3 distinct grounded coaching personas from live match context,
             then runs a 3-round structured social debate. Consensus and dissent
-            are scored and extracted via the Python FastAPI backend.
+            are scored and extracted.
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-            {PIPELINE_STEPS.map((step) => (
-              <span key={step} className="stat-chip" style={{ fontSize: "0.72rem" }}>{step}</span>
-            ))}
+          
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "1rem" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              {PIPELINE_STEPS.map((step) => (
+                <span key={step} className="stat-chip" style={{ fontSize: "0.72rem" }}>{step}</span>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setShowPicker(true)}
+              disabled={isLoading}
+              className="btn-primary"
+              style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", borderRadius: "8px", boxShadow: "none" }}
+            >
+              🎯 {activeMatch ? "Change Match" : "Select Live Match"}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── How it works ── */}
-      <div className="glass-card" style={{ padding: "1.25rem 1.5rem", maxWidth: "44rem" }}>
-        <p className="section-eyebrow" style={{ marginBottom: "0.5rem" }}>How OASIS Works</p>
-        <p style={{ fontSize: "0.84rem", color: "var(--on-surface-variant)", lineHeight: 1.7 }}>
-          Unlike the War Room&apos;s fixed agent roles, OASIS dynamically generates
-          3 coaching personas grounded in the match context — e.g. an aggressive
-          Aussie coach, a data analyst, an old-school Indian captain. These personas
-          debate over 3 rounds with a rotating Devil&apos;s Advocate role. The final
-          synthesis extracts consensus and dissent.
-        </p>
-      </div>
-
-      {/* ── Layout ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 grid-responsive">
-        <div className="lg:col-span-2 glass-card" style={{ padding: "1.5rem" }}>
-          <MatchStateForm
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            submitLabel="Run Simulation →"
-          />
+      {/* ── Match Status Banner ── */}
+      {activeMatch && (
+        <div className="glass-card animate-fade-up" style={{ padding: "0.85rem 1.25rem", borderLeft: "4px solid var(--tertiary)", display: "flex", alignItems: "center", gap: "0.85rem" }}>
+          <span style={{ fontSize: "1.2rem" }}>🏏</span>
+          <div>
+            <p style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--tertiary)", marginBottom: "0.1rem" }}>
+              Simulating Match
+            </p>
+            <p style={{ fontWeight: 700, color: "var(--primary)", fontSize: "0.9rem" }}>{activeMatch}</p>
+          </div>
         </div>
+      )}
 
-        <div className="lg:col-span-3" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          {error && (
-            <div className="glass-card" style={{
-              padding: "1rem 1.25rem",
-              borderLeft: "3px solid var(--error)",
-              background: "var(--error-light)",
-              borderTop: "1px solid var(--error-border)",
-              borderRight: "1px solid var(--error-border)",
-              borderBottom: "1px solid var(--error-border)",
-            }}>
-              <p style={{ fontSize: "0.875rem", color: "var(--error)", fontWeight: 600, marginBottom: "0.25rem" }}>
-                ⚠ Connection Error
-              </p>
-              <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>{error}</p>
-              <p style={{ fontSize: "0.72rem", color: "var(--outline)", marginTop: "0.4rem" }}>
-                Ensure FastAPI is running:{" "}
-                <code style={{ fontFamily: "monospace", background: "var(--surface-container)", padding: "1px 5px", borderRadius: "4px" }}>
-                  cd backend && uvicorn main:app --reload --port 8000
-                </code>
-              </p>
-            </div>
-          )}
+      {/* ── Results ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        {error && (
+          <div className="glass-card" style={{
+            padding: "1rem 1.25rem",
+            borderLeft: "3px solid var(--error)",
+            background: "var(--error-light)",
+            border: "1px solid var(--error-border)",
+          }}>
+            <p style={{ fontSize: "0.875rem", color: "var(--error)", fontWeight: 600, marginBottom: "0.25rem" }}>
+              ⚠ Simulation Error
+            </p>
+            <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>{error}</p>
+          </div>
+        )}
+
+        {result || isLoading ? (
           <OasisSimPanel result={result} isLoading={isLoading} />
-        </div>
+        ) : (
+          <div className="glass-card" style={{ padding: "4rem 2rem", textAlign: "center" }}>
+            <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>🌐</p>
+            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.25rem", color: "var(--primary)", marginBottom: "0.5rem" }}>
+              OASIS Ready
+            </h2>
+            <p style={{ fontSize: "0.875rem", color: "var(--secondary)", maxWidth: "40ch", margin: "0 auto 1.5rem" }}>
+              Select a live match to generate coaching personas and start the multi-round simulation.
+            </p>
+            <button
+              onClick={() => setShowPicker(true)}
+              className="btn-primary"
+              style={{ alignSelf: "center" }}
+            >
+              🎯 Select Match
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* ── Live match picker modal ── */}
+      {showPicker && (
+        <LiveMatchPicker
+          onImport={handleImport}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
 
     </div>
   );
 }
+

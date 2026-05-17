@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import oasis, war_room
+from routers import oasis, war_room, cricket, search
 
 load_dotenv()
 
@@ -41,6 +41,8 @@ app.add_middleware(
 
 app.include_router(war_room.router)
 app.include_router(oasis.router)
+app.include_router(cricket.router)
+app.include_router(search.router)
 
 
 @app.get("/health", tags=["Meta"])

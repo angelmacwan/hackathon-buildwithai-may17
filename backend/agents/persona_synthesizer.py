@@ -39,16 +39,27 @@ def synthesize_personas(match_state: MatchStateInput) -> list[PersonaProfile]:
     client = genai.Client(api_key=api_key)
 
     ms = match_state.model_dump()
+
+    batting_players = ms.get("batting_players") or []
+    bowling_players = ms.get("bowling_players") or []
+    striker         = ms.get("striker", "")
+
+    striker_line = f"Striker: {striker}" if striker else "Striker: not confirmed"
+    batting_xi   = f"Batting XI: {', '.join(batting_players)}" if batting_players else ""
+    bowling_xi   = f"Bowling XI: {', '.join(bowling_players)}" if bowling_players else ""
+
     context = (
         f"Match: {ms['team_batting']} vs {ms['team_bowling']}\n"
         f"Score: {ms['current_score']}/{ms['wickets']} after {ms['over']}.{ms['ball']} overs\n"
         f"Venue: {ms.get('venue', 'IPL venue')} | Pitch: {ms['pitch_conditions']} | Dew: {ms['dew_factor']}/10\n"
         f"{'2nd innings chasing ' + str(ms['target']) if ms.get('target') else '1st innings'}\n"
-        f"Striker: {ms['striker']}"
+        f"{striker_line}"
+        + (f"\n{batting_xi}" if batting_xi else "")
+        + (f"\n{bowling_xi}" if bowling_xi else "")
     )
 
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.5-flash",
         contents=f"Generate 3 distinct coaching personas for this match situation:\n\n{context}",
         config=types.GenerateContentConfig(
             system_instruction=PERSONA_SYNTHESIZER_PROMPT,

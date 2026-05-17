@@ -1,6 +1,59 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+// Add PlayerSelect helper component
+function PlayerSelect({
+  label,
+  name,
+  value,
+  team,
+  onChange
+}: {
+  label: string;
+  name: string;
+  value: string;
+  team: string;
+  onChange: (e: any) => void;
+}) {
+  const [players, setPlayers] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!team) return;
+    setLoading(true);
+    fetch(`http://localhost:8000/search/players?team=${encodeURIComponent(team)}`)
+      .then(res => res.json())
+      .then(data => {
+        setPlayers(data.players || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [team]);
+
+  return (
+    <div className="field">
+      <label htmlFor={name} className="field-label">{label}</label>
+      <div className="relative">
+        <input
+          id={name}
+          name={name}
+          list={`${name}-list`}
+          type="text"
+          value={value}
+          onChange={onChange}
+          className="field-input"
+          placeholder={loading ? "Searching squad..." : `Select or type ${label.toLowerCase()}`}
+        />
+        <datalist id={`${name}-list`}>
+          {players.map(p => (
+            <option key={p} value={p} />
+          ))}
+        </datalist>
+      </div>
+    </div>
+  );
+}
 
 export interface MatchStateFormValues {
   innings: number;
@@ -19,6 +72,8 @@ export interface MatchStateFormValues {
   required_run_rate?: number;
   impact_player_available: boolean;
   notes?: string;
+  batting_players?: string[];
+  bowling_players?: string[];
 }
 
 const DEFAULT_VALUES: MatchStateFormValues = {
@@ -38,12 +93,15 @@ const DEFAULT_VALUES: MatchStateFormValues = {
   required_run_rate: undefined,
   impact_player_available: true,
   notes: "",
+  batting_players: [],
+  bowling_players: [],
 };
 
 interface MatchStateFormProps {
   onSubmit: (values: MatchStateFormValues) => void;
   isLoading?: boolean;
   submitLabel?: string;
+  defaultValues?: Partial<MatchStateFormValues>;
 }
 
 function Section({ title, color = "var(--outline)", children }: {
@@ -79,8 +137,15 @@ export default function MatchStateForm({
   onSubmit,
   isLoading = false,
   submitLabel = "Analyse Now",
+  defaultValues,
 }: MatchStateFormProps) {
-  const [values, setValues] = useState<MatchStateFormValues>(DEFAULT_VALUES);
+  const [values, setValues] = useState<MatchStateFormValues>({ ...DEFAULT_VALUES, ...defaultValues });
+
+  useEffect(() => {
+    if (defaultValues) {
+      setValues(prev => ({ ...prev, ...defaultValues }));
+    }
+  }, [defaultValues]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -159,18 +224,22 @@ export default function MatchStateForm({
               value={values.team_bowling} onChange={handleChange} className="field-input"
               placeholder="e.g. Chennai Super Kings" />
           </div>
-          <div className="field">
-            <label htmlFor="striker" className="field-label">Striker</label>
-            <input id="striker" name="striker" type="text"
-              value={values.striker} onChange={handleChange} className="field-input"
-              placeholder="On strike" />
-          </div>
-          <div className="field">
-            <label htmlFor="non_striker" className="field-label">Non-Striker</label>
-            <input id="non_striker" name="non_striker" type="text"
-              value={values.non_striker} onChange={handleChange} className="field-input"
-              placeholder="Other end" />
-          </div>
+          
+          <PlayerSelect
+            label="Striker"
+            name="striker"
+            value={values.striker}
+            team={values.team_batting}
+            onChange={handleChange}
+          />
+
+          <PlayerSelect
+            label="Non-Striker"
+            name="non_striker"
+            value={values.non_striker}
+            team={values.team_batting}
+            onChange={handleChange}
+          />
         </div>
       </Section>
 

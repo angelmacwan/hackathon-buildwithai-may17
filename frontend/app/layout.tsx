@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body style={{ backgroundColor: "var(--surface)", color: "var(--on-surface)" }}
-        className="antialiased min-h-screen">
+        className="antialiased min-h-screen" suppressHydrationWarning>
         <Sidebar />
         <main style={{ marginLeft: "220px", minHeight: "100vh" }}>
           {children}

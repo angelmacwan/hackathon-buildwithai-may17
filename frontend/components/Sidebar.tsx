@@ -17,12 +17,6 @@ const NAV = [
     label: "OASIS",
     sub: "Social simulation",
   },
-  {
-    href: "/backtest",
-    icon: "🔬",
-    label: "Scenario Library",
-    sub: "Backtesting",
-  },
 ];
 
 const TECH = ["Gemini 1.5 Pro", "LangGraph", "FastAPI", "SSE"];

@@ -26,18 +26,6 @@ const MODULES = [
     accentBg: "rgba(30, 52, 72, 0.06)",
     cta: "Run Simulation",
   },
-  {
-    href: "/backtest",
-    icon: "🔬",
-    title: "Scenario Library",
-    tag: "Backtesting",
-    tech: "3 Historical Moments",
-    description:
-      "Validate the system against 2019 WC Final, IPL 2023 Final, and T20 WC 2024 IND vs PAK. See if the agents would have made the correct call.",
-    accent: "#b45309",
-    accentBg: "rgba(180, 83, 9, 0.06)",
-    cta: "Run Scenarios",
-  },
 ];
 
 const AGENTS = [
@@ -54,7 +42,6 @@ const REQUIREMENTS = [
   "Multi-turn debate loop: Strategist → Devil's Advocate → Strategist revises",
   "Cricket-language output — full dissent visible via Commentator agent",
   "OASIS social simulation with dynamic persona synthesis (Module 2)",
-  "Backtesting: Scenario Library against 3 famous match moments",
 ];
 
 export default function HomePage() {

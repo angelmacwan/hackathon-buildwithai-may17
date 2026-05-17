@@ -28,6 +28,8 @@ class MatchStateInput(BaseModel):
     powerplay_active: bool = False
     death_overs: bool = False
     notes: Optional[str] = None
+    batting_players: Optional[List[str]] = []
+    bowling_players: Optional[List[str]] = []
 
 
 # ---------------------------------------------------------------------------
