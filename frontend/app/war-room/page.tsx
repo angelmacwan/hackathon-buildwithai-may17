@@ -53,13 +53,13 @@ export default function WarRoomPage() {
   const isStreaming = status === "streaming";
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10" style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+    <div className="page-wrapper">
 
       {/* ── Hero ── */}
       <div className="hero-panel">
         <div style={{ position: "relative", zIndex: 1 }}>
-          <p style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.65)", marginBottom: "0.4rem" }}>
-            Module 1 · LangGraph
+          <p style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.13em", color: "rgba(255,255,255,0.5)", marginBottom: "0.5rem" }}>
+            Module 1 · LangGraph · SSE Streaming
           </p>
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.75rem, 3vw, 2.5rem)", fontWeight: 800, letterSpacing: "-0.05em", color: "#fff", marginBottom: "0.5rem" }}>
             ⚔️ Tactical War Room
@@ -101,12 +101,12 @@ export default function WarRoomPage() {
       {/* ── Pipeline badges ── */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         {["① Stats Analyst", "② Pitch Specialist", "③ Lead Strategist", "④ Devil's Advocate", "⑤ Strategist Refines", "⑥ Commentator"].map((step) => (
-          <span key={step} className="badge">{step}</span>
+          <span key={step} className="step-badge">{step}</span>
         ))}
       </div>
 
       {/* ── Layout ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 3fr", gap: "1.5rem" }}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 3fr", gap: "1.5rem", alignItems: "start" }}
         className="grid-responsive">
 
         {/* Form */}
@@ -117,17 +117,20 @@ export default function WarRoomPage() {
         {/* Results */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           {error && (
-            <div
-              className="glass-card"
-              style={{ padding: "1rem 1.25rem", borderLeft: "4px solid var(--error)", background: "rgba(186,26,26,0.04)" }}
-            >
+            <div className="glass-card" style={{
+              padding: "1rem 1.25rem",
+              borderLeft: "3px solid var(--error)",
+              background: "var(--error-light)",
+              border: "1px solid var(--error-border)",
+              borderLeftWidth: "3px",
+            }}>
               <p style={{ fontSize: "0.875rem", color: "var(--error)", fontWeight: 600, marginBottom: "0.25rem" }}>
                 ⚠ Connection Error
               </p>
               <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>{error}</p>
               <p style={{ fontSize: "0.72rem", color: "var(--outline)", marginTop: "0.4rem" }}>
                 Ensure the backend is running:{" "}
-                <code style={{ fontFamily: "monospace", background: "var(--surface-container)", padding: "1px 4px", borderRadius: "4px" }}>
+                <code style={{ fontFamily: "monospace", background: "var(--surface-container)", padding: "1px 5px", borderRadius: "4px" }}>
                   cd backend && uvicorn main:app --reload --port 8000
                 </code>
               </p>
@@ -147,13 +150,16 @@ export default function WarRoomPage() {
           )}
 
           {status === "idle" && (
-            <div className="glass-card" style={{ padding: "3rem", textAlign: "center" }}>
-              <p style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>🏏</p>
-              <p style={{ fontSize: "0.875rem", color: "var(--secondary)", marginBottom: "0.25rem" }}>
-                Fill the match state and hit <strong style={{ color: "var(--primary)" }}>Deliberate</strong> to start.
+            <div className="glass-card" style={{ padding: "3rem 2rem", textAlign: "center" }}>
+              <p style={{ fontSize: "2.5rem", marginBottom: "0.85rem" }}>🏏</p>
+              <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1rem", color: "var(--primary)", marginBottom: "0.4rem" }}>
+                Ready to deliberate
+              </p>
+              <p style={{ fontSize: "0.82rem", color: "var(--secondary)", marginBottom: "0.25rem" }}>
+                Fill in the match state and click <strong style={{ color: "var(--primary)" }}>Deliberate</strong>.
               </p>
               <p style={{ fontSize: "0.75rem", color: "var(--outline)" }}>
-                Agents stream live via Server-Sent Events
+                Six agents stream live via Server-Sent Events
               </p>
             </div>
           )}

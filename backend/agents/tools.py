@@ -178,5 +178,5 @@ def calculate_win_probability(
             f"Batting team win probability (2nd innings): {win_prob:.0f}%. "
             f"Need {runs_needed} off {overs_remaining} overs (RRR: {required_rr_actual:.2f}). "
             f"Wickets remaining: {wickets_remaining}/10. "
-            f"Dew factor: {dew_factor}/10 ({"favours batting" if dew_factor > 5 else "manageable"})."
+            f"Dew factor: {dew_factor}/10 ({'favours batting' if dew_factor > 5 else 'manageable'})."
         )

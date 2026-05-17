@@ -5,10 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/war-room", label: "⚔️ War Room" },
-  { href: "/oasis", label: "🌐 OASIS" },
-  { href: "/backtest", label: "🔬 Backtest" },
+  { href: "/war-room", label: "War Room" },
+  { href: "/oasis",    label: "OASIS" },
+  { href: "/backtest", label: "Backtest" },
 ];
 
 export default function Navbar() {
@@ -16,68 +15,65 @@ export default function Navbar() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50"
       style={{
-        background: "rgba(248, 249, 249, 0.88)",
-        backdropFilter: "blur(14px)",
-        WebkitBackdropFilter: "blur(14px)",
-        borderBottom: "1px solid rgba(18, 40, 60, 0.08)",
-        boxShadow: "0 2px 12px rgba(18, 40, 60, 0.04)",
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+        background: "rgba(247, 248, 248, 0.85)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: "1px solid var(--divider)",
+        boxShadow: "var(--shadow-xs)",
       }}
     >
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <div style={{ maxWidth: "72rem", margin: "0 auto", padding: "0 1.25rem", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group" style={{ textDecoration: "none" }}>
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-            style={{ background: "var(--gradient-primary)" }}
-          >
+        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "0.625rem" }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: "9px", flexShrink: 0,
+            background: "var(--gradient-primary)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "1rem",
+            boxShadow: "0 2px 8px rgba(10,30,50,0.20)",
+          }}>
             🏏
           </div>
           <div>
-            <p
-              className="font-bold text-sm leading-none"
-              style={{ fontFamily: "var(--font-display)", color: "var(--primary)", letterSpacing: "-0.02em" }}
-            >
+            <p style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "0.875rem", color: "var(--primary)", letterSpacing: "-0.03em", lineHeight: 1 }}>
               Captain Cool
             </p>
-            <p className="text-xs leading-none mt-0.5 hidden sm:block" style={{ color: "var(--outline)" }}>
-              Multi-Agent Cricket Strategist
+            <p style={{ fontSize: "0.65rem", color: "var(--outline)", lineHeight: 1, marginTop: "0.2rem", display: "none" }} className="sm:block">
+              Multi-Agent Cricket AI
             </p>
           </div>
         </Link>
 
-        {/* Nav */}
-        <nav className="flex items-center gap-1">
+        {/* Nav links */}
+        <nav style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
           {NAV_LINKS.map(({ href, label }) => {
-            const active = pathname === href;
+            const active = pathname === href || pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
-                style={{ textDecoration: "none" }}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                  active ? "" : ""
-                }`}
+                style={{
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "0.35rem 0.75rem",
+                  borderRadius: "8px",
+                  fontSize: "0.82rem",
+                  fontWeight: active ? 700 : 500,
+                  color: active ? "var(--primary)" : "var(--secondary)",
+                  background: active ? "rgba(15,34,54,0.07)" : "transparent",
+                  transition: "all 0.12s",
+                }}
               >
-                <span
-                  style={{
-                    display: "inline-block",
-                    padding: "0.3rem 0.65rem",
-                    borderRadius: "8px",
-                    fontSize: "0.8rem",
-                    fontWeight: active ? "700" : "500",
-                    color: active ? "var(--primary)" : "var(--secondary)",
-                    background: active ? "rgba(18, 40, 60, 0.07)" : "transparent",
-                    transition: "all 0.14s",
-                  }}
-                >
-                  {label}
-                </span>
+                {label}
               </Link>
             );
           })}
         </nav>
+
       </div>
     </header>
   );

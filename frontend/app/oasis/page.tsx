@@ -5,6 +5,13 @@ import MatchStateForm, { MatchStateFormValues } from "@/components/MatchStateFor
 import OasisSimPanel from "@/components/OasisSimPanel";
 import { runOasis, OasisResult } from "@/lib/api";
 
+const PIPELINE_STEPS = [
+  "① Ingest & Ontology",
+  "② Persona Synthesis",
+  "③ Simulation Loop (3 rounds)",
+  "④ Report Synthesis",
+];
+
 export default function OasisPage() {
   const [result, setResult] = useState<OasisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,57 +32,45 @@ export default function OasisPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
-      {/* ── Header ── */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-xs text-violet-400 font-semibold uppercase tracking-widest">
-          <span>🌐</span> Module 2
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
-          OASIS Simulation
-        </h1>
-        <p className="text-slate-400 max-w-xl text-sm leading-relaxed">
-          Synthesises 3 distinct grounded personas from the match state, then runs
-          a 3-round multi-turn social simulation. The Python FastAPI backend handles
-          this module via sequential Gemini calls.
-        </p>
+    <div className="page-wrapper">
 
-        {/* Pipeline steps */}
-        <div className="flex flex-wrap gap-2 pt-1">
-          {[
-            "① Ingest & Ontology",
-            "② Persona Synthesis",
-            "③ Simulation Loop (3 rounds)",
-            "④ Report Synthesis",
-          ].map((step) => (
-            <span
-              key={step}
-              className="text-xs px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 font-medium"
-            >
-              {step}
-            </span>
-          ))}
-        </div>
-
-        {/* How it works */}
-        <div className="glass-card rounded-xl p-4 max-w-2xl space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-            How OASIS Works
+      {/* ── Hero ── */}
+      <div className="hero-panel">
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <p style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "0.5rem" }}>
+            Module 2 · Social Simulation
           </p>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Unlike the War Room&apos;s fixed agent roles, OASIS dynamically generates
-            3 coaching personas grounded in the match context (e.g. an aggressive
-            Aussie coach, a data analyst, an old-school Indian captain). These
-            personas then debate over 3 rounds, with the Devil&apos;s Advocate role
-            rotating. The final synthesis extracts consensus and dissent.
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.75rem, 3vw, 2.6rem)", fontWeight: 800, letterSpacing: "-0.05em", color: "#fff", marginBottom: "0.6rem" }}>
+            🌐 OASIS Simulation
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.72)", fontSize: "0.9rem", maxWidth: "54ch", lineHeight: 1.7, marginBottom: "1.5rem" }}>
+            Synthesises 3 distinct grounded coaching personas from match context,
+            then runs a 3-round structured social debate. Consensus and dissent
+            are scored and extracted via the Python FastAPI backend.
           </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            {PIPELINE_STEPS.map((step) => (
+              <span key={step} className="stat-chip" style={{ fontSize: "0.72rem" }}>{step}</span>
+            ))}
+          </div>
         </div>
       </div>
 
+      {/* ── How it works ── */}
+      <div className="glass-card" style={{ padding: "1.25rem 1.5rem", maxWidth: "44rem" }}>
+        <p className="section-eyebrow" style={{ marginBottom: "0.5rem" }}>How OASIS Works</p>
+        <p style={{ fontSize: "0.84rem", color: "var(--on-surface-variant)", lineHeight: 1.7 }}>
+          Unlike the War Room&apos;s fixed agent roles, OASIS dynamically generates
+          3 coaching personas grounded in the match context — e.g. an aggressive
+          Aussie coach, a data analyst, an old-school Indian captain. These personas
+          debate over 3 rounds with a rotating Devil&apos;s Advocate role. The final
+          synthesis extracts consensus and dissent.
+        </p>
+      </div>
+
       {/* ── Layout ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Form */}
-        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 grid-responsive">
+        <div className="lg:col-span-2 glass-card" style={{ padding: "1.5rem" }}>
           <MatchStateForm
             onSubmit={handleSubmit}
             isLoading={isLoading}
@@ -83,20 +78,32 @@ export default function OasisPage() {
           />
         </div>
 
-        {/* Results */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           {error && (
-            <div className="glass-card rounded-2xl p-5 border border-rose-500/30 bg-rose-950/20 text-rose-300 text-sm">
-              <span className="font-semibold">⚠ Error: </span>{error}
-              <p className="mt-1 text-rose-400/70 text-xs">
+            <div className="glass-card" style={{
+              padding: "1rem 1.25rem",
+              borderLeft: "3px solid var(--error)",
+              background: "var(--error-light)",
+              borderTop: "1px solid var(--error-border)",
+              borderRight: "1px solid var(--error-border)",
+              borderBottom: "1px solid var(--error-border)",
+            }}>
+              <p style={{ fontSize: "0.875rem", color: "var(--error)", fontWeight: 600, marginBottom: "0.25rem" }}>
+                ⚠ Connection Error
+              </p>
+              <p style={{ fontSize: "0.8rem", color: "var(--secondary)" }}>{error}</p>
+              <p style={{ fontSize: "0.72rem", color: "var(--outline)", marginTop: "0.4rem" }}>
                 Ensure FastAPI is running:{" "}
-                <code className="font-mono">cd backend && uvicorn main:app --reload --port 8000</code>
+                <code style={{ fontFamily: "monospace", background: "var(--surface-container)", padding: "1px 5px", borderRadius: "4px" }}>
+                  cd backend && uvicorn main:app --reload --port 8000
+                </code>
               </p>
             </div>
           )}
           <OasisSimPanel result={result} isLoading={isLoading} />
         </div>
       </div>
+
     </div>
   );
 }

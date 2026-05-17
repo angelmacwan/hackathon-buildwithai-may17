@@ -6,234 +6,209 @@ const MODULES = [
     href: "/war-room",
     icon: "⚔️",
     title: "Tactical War Room",
-    subtitle: "Module 1 · LangGraph",
+    tag: "Module 1",
+    tech: "LangGraph · SSE",
     description:
-      "6 Gemini agents debate in real time via LangGraph. Stats Guru uses function calling, Pitch Specialist grounds in live data, Strategist proposes, Devil challenges, Commentator translates — streamed live via SSE.",
-    badgeLabel: "SSE Streaming",
-    accent: "#12283c",
-    accentBg: "rgba(18, 40, 60, 0.06)",
-    cta: "Enter War Room →",
+      "Six Gemini agents deliberate live — Stats Guru uses function calling, Pitch Specialist grounds in real search data, Strategist proposes, Devil's Advocate challenges, Commentator translates.",
+    accent: "#0f2236",
+    accentBg: "rgba(15, 34, 54, 0.06)",
+    cta: "Open War Room",
   },
   {
     href: "/oasis",
     icon: "🌐",
     title: "OASIS Simulation",
-    subtitle: "Module 2 · Social Simulation",
+    tag: "Module 2",
+    tech: "Social Simulation",
     description:
-      "Synthesises 3 grounded coaching personas from the match state and runs a 3-round multi-turn social debate. Consensus and dissent are extracted and scored.",
-    badgeLabel: "Persona Synthesis",
-    accent: "#293e53",
-    accentBg: "rgba(41, 62, 83, 0.06)",
-    cta: "Run Simulation →",
+      "Synthesises 3 grounded coaching personas from match context, then runs a 3-round structured debate. Consensus and dissent are scored and extracted.",
+    accent: "#1e3448",
+    accentBg: "rgba(30, 52, 72, 0.06)",
+    cta: "Run Simulation",
   },
   {
     href: "/backtest",
     icon: "🔬",
     title: "Scenario Library",
-    subtitle: "Backtesting",
+    tag: "Backtesting",
+    tech: "3 Historical Moments",
     description:
-      "Run the War Room agents against famous match moments — 2019 WC Final last over, IPL 2023 Final, T20 WC 2024. Validate the system against known outcomes.",
-    badgeLabel: "3 Scenarios",
+      "Validate the system against 2019 WC Final, IPL 2023 Final, and T20 WC 2024 IND vs PAK. See if the agents would have made the correct call.",
     accent: "#b45309",
     accentBg: "rgba(180, 83, 9, 0.06)",
-    cta: "Backtest →",
+    cta: "Run Scenarios",
   },
 ];
 
 const AGENTS = [
-  { emoji: "📊", name: "Stats Guru", role: "Function Calling", color: "rgba(18,40,60,0.08)" },
-  { emoji: "🌧️", name: "Pitch Specialist", role: "Search Grounding", color: "rgba(18,40,60,0.06)" },
-  { emoji: "🎯", name: "Lead Strategist", role: "Gemini 1.5 Pro", color: "rgba(18,40,60,0.09)" },
-  { emoji: "⚡", name: "Devil's Advocate", role: "Gemini 1.5 Pro", color: "rgba(186,26,26,0.07)" },
-  { emoji: "🎙️", name: "Commentator", role: "Cricket Language", color: "rgba(180,83,9,0.07)" },
-  { emoji: "🌐", name: "OASIS Engine", role: "Social Simulation", color: "rgba(41,62,83,0.08)" },
+  { emoji: "🎯", name: "Lead Strategist",    role: "Proposes tactics",         color: "rgba(15,34,54,0.07)"  },
+  { emoji: "📊", name: "Stats Guru",          role: "Function calling",         color: "rgba(30,52,72,0.07)"  },
+  { emoji: "⚡", name: "Devil's Advocate",    role: "Risk assessment",          color: "rgba(185,28,28,0.06)" },
+  { emoji: "🌧️", name: "Pitch Specialist",   role: "Search grounding",         color: "rgba(22,101,52,0.07)" },
+  { emoji: "🎙️", name: "Match Commentator",  role: "Cricket language",         color: "rgba(180,83,9,0.07)"  },
+];
+
+const REQUIREMENTS = [
+  "6 distinct named Gemini agents, each with its own system prompt",
+  "Real tool calls — function calling (stats) + Google Search grounding (pitch)",
+  "Multi-turn debate loop: Strategist → Devil's Advocate → Strategist revises",
+  "Cricket-language output — full dissent visible via Commentator agent",
+  "OASIS social simulation with dynamic persona synthesis (Module 2)",
+  "Backtesting: Scenario Library against 3 famous match moments",
 ];
 
 export default function HomePage() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top left, rgba(255, 220, 197, 0.55), transparent 32%), linear-gradient(180deg, #f7f4ef 0%, #eef2f0 54%, #e8eceb 100%)",
-      }}
-    >
-      <div className="max-w-5xl mx-auto px-4 py-16 space-y-14">
+    <div style={{ background: "linear-gradient(180deg, #f4f6f7 0%, #f7f8f8 100%)", minHeight: "100vh" }}>
+      <div className="page-wrapper">
 
         {/* ── Hero ── */}
         <section className="hero-panel">
           <div style={{ position: "relative", zIndex: 1 }}>
-            {/* Eyebrow */}
-            <p
-              className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.18)",
-                color: "rgba(255,255,255,0.9)",
-                letterSpacing: "0.06em",
-              }}
-            >
-              🏆 Gemini 1.5 Pro · LangGraph · FastAPI · Google Search Grounding
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem" }}>
+              <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>
+                Multi-Agent Cricket AI
+              </span>
+              <span style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.2)" }} />
+              <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,183,131,0.85)" }}>
+                Gemini 1.5 Pro · LangGraph
+              </span>
+            </div>
 
-            <h1
-              className="mb-4"
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "clamp(2.8rem, 5vw, 4.5rem)",
-                fontWeight: 800,
-                letterSpacing: "-0.055em",
-                lineHeight: 0.96,
-                color: "#ffffff",
-              }}
-            >
+            <h1 style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(2.6rem, 5vw, 4.2rem)",
+              fontWeight: 800,
+              letterSpacing: "-0.055em",
+              lineHeight: 0.95,
+              color: "#ffffff",
+              marginBottom: "1rem",
+            }}>
               Captain Cool
             </h1>
 
-            <p
-              style={{
-                maxWidth: "52ch",
-                color: "rgba(255,255,255,0.82)",
-                fontSize: "1rem",
-                lineHeight: 1.7,
-                marginBottom: "2rem",
-              }}
-            >
-              Your virtual IPL captain. Multi-agent AI debates the next bowling change,
-              batting promotion, and field setup — in cricket language, with full dissent
-              visible.
+            <p style={{
+              maxWidth: "50ch",
+              color: "rgba(255,255,255,0.72)",
+              fontSize: "0.975rem",
+              lineHeight: 1.75,
+              marginBottom: "2rem",
+            }}>
+              Your virtual IPL captain. A six-agent AI system debates bowling changes,
+              batting promotions, and field setups — in real cricket language, with
+              full dissent visible.
             </p>
 
-            {/* CTA buttons */}
-            <div className="flex flex-wrap gap-3">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginBottom: "2rem" }}>
               <Link href="/war-room" style={{ textDecoration: "none" }}>
-                <button className="btn-primary" style={{ fontSize: "0.875rem" }}>
-                  ⚔️ Enter War Room
-                </button>
+                <button className="btn-primary">⚔️ Enter War Room</button>
               </Link>
               <Link href="/oasis" style={{ textDecoration: "none" }}>
-                <button
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.4rem",
-                    padding: "0.7rem 1.25rem",
-                    borderRadius: "10px",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                    background: "rgba(255,255,255,0.1)",
-                    color: "rgba(255,255,255,0.92)",
-                    fontWeight: 600,
-                    fontSize: "0.875rem",
-                    cursor: "pointer",
-                    transition: "background 0.15s",
-                  }}
-                >
-                  🌐 OASIS Simulation
-                </button>
+                <button className="btn-ghost">🌐 OASIS Simulation</button>
               </Link>
             </div>
-          </div>
-        </section>
 
-        {/* ── Agents ── */}
-        <section>
-          <p className="section-eyebrow mb-4">6 Distinct Gemini Agents</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {AGENTS.map((a) => (
-              <div
-                key={a.name}
-                className="glass-card p-4 text-center space-y-2"
-                style={{ boxShadow: "var(--shadow-sm)" }}
-              >
-                <div
-                  className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center text-xl"
-                  style={{ background: a.color }}
-                >
-                  {a.emoji}
-                </div>
-                <p
-                  className="font-semibold text-xs leading-tight"
-                  style={{ color: "var(--primary)" }}
-                >
-                  {a.name}
-                </p>
-                <p className="text-xs" style={{ color: "var(--outline)" }}>
-                  {a.role}
-                </p>
-              </div>
-            ))}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
+              {["6 Gemini Agents", "Live SSE Streaming", "Google Search Grounding", "Function Calling"].map((s) => (
+                <span key={s} className="stat-chip">{s}</span>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* ── Modules ── */}
         <section>
-          <p className="section-eyebrow mb-4">Two Modules</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div style={{ marginBottom: "1.25rem" }}>
+            <p className="section-eyebrow">Modules</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {MODULES.map((mod) => (
-              <Link key={mod.href} href={mod.href} style={{ textDecoration: "none" }}>
+              <Link
+                key={mod.href}
+                href={mod.href}
+                style={{ textDecoration: "none", display: "block" }}
+              >
                 <div
-                  className="glass-card p-6 h-full space-y-4 transition-all duration-200"
-                  style={{ cursor: "pointer" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = "0 16px 40px rgba(18,40,60,0.12)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-card)";
-                  }}
+                  className="glass-card hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(10,20,30,0.12)] transition-all duration-200"
+                  style={{ padding: "1.5rem", height: "100%", display: "flex", flexDirection: "column", gap: "1rem", cursor: "pointer" }}
                 >
-                  <div className="flex items-start justify-between">
-                    <span className="text-3xl">{mod.icon}</span>
-                    <span
-                      className="badge"
-                      style={{ background: mod.accentBg, borderColor: "transparent", color: mod.accent }}
-                    >
-                      {mod.badgeLabel}
-                    </span>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                    <div style={{ fontSize: "1.75rem", lineHeight: 1 }}>{mod.icon}</div>
+                    <div style={{
+                      padding: "0.25rem 0.6rem",
+                      borderRadius: "999px",
+                      background: mod.accentBg,
+                      fontSize: "0.65rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      color: mod.accent,
+                      border: `1px solid ${mod.accentBg.replace('0.06', '0.15')}`,
+                    }}>
+                      {mod.tag}
+                    </div>
                   </div>
-                  <div>
-                    <p
-                      className="font-bold text-base"
-                      style={{ fontFamily: "var(--font-display)", color: "var(--primary)" }}
-                    >
+
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.0rem", color: "var(--primary)", letterSpacing: "-0.02em", marginBottom: "0.2rem" }}>
                       {mod.title}
                     </p>
-                    <p className="text-xs mb-2" style={{ color: "var(--outline)" }}>
-                      {mod.subtitle}
+                    <p style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--outline)", marginBottom: "0.65rem" }}>
+                      {mod.tech}
                     </p>
-                    <p className="text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+                    <p style={{ fontSize: "0.82rem", color: "var(--on-surface-variant)", lineHeight: 1.7 }}>
                       {mod.description}
                     </p>
                   </div>
-                  <p className="text-sm font-semibold" style={{ color: mod.accent }}>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", fontWeight: 700, color: mod.accent }}>
                     {mod.cta}
-                  </p>
+                    <span style={{ fontSize: "0.9rem" }}>→</span>
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
         </section>
 
-        {/* ── Requirements checklist ── */}
-        <section className="glass-card p-6">
-          <p className="section-eyebrow mb-4">Agentic Requirements</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { ok: true, text: "6 distinct named Gemini agents — each with its own system prompt" },
-              { ok: true, text: "Real tool calls: function calling (stats) + Google Search grounding (pitch)" },
-              { ok: true, text: "Multi-turn debate loop: Strategist → Devil's Advocate → Strategist revises" },
-              { ok: true, text: "Cricket-language output — full dissent visible (Commentator agent)" },
-              { ok: true, text: "OASIS social simulation with dynamic persona synthesis (Module 2)" },
-              { ok: true, text: "Backtesting: Scenario Library with 3 famous match moments" },
-            ].map((item) => (
-              <div
-                key={item.text}
-                className="flex items-start gap-2.5 p-3 rounded-xl text-sm"
-                style={{ background: "rgba(45,106,79,0.05)", border: "1px solid rgba(45,106,79,0.12)" }}
-              >
-                <span className="shrink-0 mt-0.5 font-bold" style={{ color: "var(--success-color)" }}>✓</span>
-                <span style={{ color: "var(--on-surface-variant)" }}>{item.text}</span>
+        {/* ── Agents ── */}
+        <section className="glass-card" style={{ padding: "1.5rem 1.75rem" }}>
+          <p className="section-eyebrow" style={{ marginBottom: "1.1rem" }}>Agent Roster</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.75rem" }}>
+            {AGENTS.map((a) => (
+              <div key={a.name} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.6rem", textAlign: "center" }}>
+                <div style={{
+                  width: 44, height: 44,
+                  borderRadius: "12px",
+                  background: a.color,
+                  border: "1px solid var(--divider)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "1.2rem",
+                }}>
+                  {a.emoji}
+                </div>
+                <div>
+                  <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--primary)", lineHeight: 1.3 }}>{a.name}</p>
+                  <p style={{ fontSize: "0.65rem", color: "var(--outline)", marginTop: "0.15rem" }}>{a.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Requirements ── */}
+        <section className="glass-card" style={{ padding: "1.5rem 1.75rem" }}>
+          <p className="section-eyebrow" style={{ marginBottom: "1.1rem" }}>Agentic Requirements</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {REQUIREMENTS.map((text) => (
+              <div key={text} style={{
+                display: "flex", alignItems: "flex-start", gap: "0.65rem",
+                padding: "0.75rem 0.9rem",
+                borderRadius: "10px",
+                background: "var(--success-light)",
+                border: "1px solid var(--success-border)",
+              }}>
+                <span style={{ color: "var(--success)", fontWeight: 800, fontSize: "0.8rem", lineHeight: 1.5, flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: "0.82rem", color: "var(--on-surface-variant)", lineHeight: 1.55 }}>{text}</span>
               </div>
             ))}
           </div>
